@@ -7,16 +7,11 @@
 const size_t MB = 1024 * 1024;
 
 int main() {
-    const int DURATION_MINUTES = 6;  // Run for 6 minutes to ensure at least one check
-    const size_t ALLOCATION_SIZE = 10 * MB;  // Allocate 10MB at a time for finer control
-
-    MEMORYSTATUSEX memInfo;
-    memInfo.dwLength = sizeof(MEMORYSTATUSEX);
-    GlobalMemoryStatusEx(&memInfo);
-    DWORDLONG totalPhysMem = memInfo.ullTotalPhys;
-
     // Calculate 5.1% of total physical memory (just above the 5% threshold)
-    size_t targetMemory = static_cast<size_t>(totalPhysMem * 0.051);
+    size_t targetMemory = static_cast<size_t>(totalPhysMem * 0.051);  // This is good, keeping it at 5.1%
+
+    // Increase the duration to ensure detection
+    const int DURATION_MINUTES = 10;  // Increased from 6 to 10 minutes to ensure detection
 
     auto start_time = std::chrono::steady_clock::now();
     std::vector<char*> leaks;
@@ -24,6 +19,13 @@ int main() {
     size_t totalAllocated = 0;
 
     while (true) {
+        // Add memory check before allocation
+        GlobalMemoryStatusEx(&memInfo);
+        if (memInfo.ullAvailPhys < ALLOCATION_SIZE) {
+            std::cout << "Available physical memory too low. Stopping allocation." << std::endl;
+            break;
+        }
+
         if (totalAllocated < targetMemory) {
             char* leak = new (std::nothrow) char[ALLOCATION_SIZE];
             if (leak == nullptr) {
@@ -32,25 +34,40 @@ int main() {
                 break;
             }
             
-            memset(leak, 1, ALLOCATION_SIZE);
-            leaks.push_back(leak);
-            totalAllocated += ALLOCATION_SIZE;
+            // Add try-catch block around memory operations
+            try {
+                memset(leak, 1, ALLOCATION_SIZE);
+                leaks.push_back(leak);
+                totalAllocated += ALLOCATION_SIZE;
+            } catch (...) {
+                std::cout << "Memory operation failed. Stopping allocation." << std::endl;
+                delete[] leak;
+                break;
+            }
 
             std::cout << "Allocated: " << totalAllocated / MB << " MB\r" << std::flush;
         }
 
+        // Add proper sleep duration to reduce CPU usage
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        
         auto current_time = std::chrono::steady_clock::now();
         auto elapsed_time = std::chrono::duration_cast<std::chrono::minutes>(current_time - start_time).count();
         
         if (elapsed_time >= DURATION_MINUTES) {
             break;
         }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     std::cout << "\nMemory leak simulation completed. Total leaked: " 
               << totalAllocated / MB << " MB" << std::endl;
+
+    // Add cleanup code before infinite loop
+    std::cout << "\nStarting cleanup phase..." << std::endl;
+    for (char* ptr : leaks) {
+        delete[] ptr;
+    }
+    leaks.clear();
 
     std::cout << "Keeping program alive. Press Ctrl+C to exit." << std::endl;
     while(true) {
