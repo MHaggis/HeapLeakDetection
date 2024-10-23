@@ -42,7 +42,7 @@ jobs:
       with:
         name: memoryleak
     
-    - name: Run Atomic Test
+    - name: Run memory leak program
       run: |
         .\memoryleak.exe
       timeout-minutes: 2
