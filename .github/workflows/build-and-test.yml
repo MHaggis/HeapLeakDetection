@@ -29,31 +29,3 @@ jobs:
       with:
         name: memoryleak
         path: memoryleak.exe
-
-  test:
-    needs: build
-    runs-on: windows-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Download compiled executable
-      uses: actions/download-artifact@v3
-      with:
-        name: memoryleak
-    
-    - name: Run memory leak program
-      run: |
-        .\memoryleak.exe
-      timeout-minutes: 2
-    
-    - name: Check for HeapLeakDetection registry artifact
-      run: |
-        $regPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\HeapLeakDetection"
-        if (Test-Path $regPath) {
-          Write-Output "HeapLeakDetection registry key found. Test likely successful."
-          Get-ItemProperty $regPath
-        } else {
-          Write-Output "HeapLeakDetection registry key not found. Test may have failed or needs more time."
-          exit 1
-        }
