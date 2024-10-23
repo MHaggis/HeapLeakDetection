@@ -1,71 +1,48 @@
-# HeapLeakDetection
+# 🔍 HeapLeakDetection Registry Forensics
 
-## Overview
+## 🎯 Overview
+HeapLeakDetection, specifically the registry key at `HKLM\Software\Microsoft\RADAR\HeapLeakDetection\DiagnosedApplications`, is a powerful forensic artifact for investigating suspicious executables. This key tracks programs that Windows RADAR (Runtime Application Self-healing and Detection At Runtime) flags for memory leak detection.
 
-HeapLeakDetection, specifically the registry key at `HKLM\Software\Microsoft\RADAR\HeapLeakDetection\DiagnosedApplications`, is a valuable yet lesser-known artifact when investigating malicious executables. This key, residing in the Software hive, records executables that RADAR (Runtime Application Self-healing and Detection At Runtime) has detected for potential memory leaks.
+## 🏗️ Structure and Significance
+- 📝 Registry Location: `HKLM\Software\Microsoft\RADAR\HeapLeakDetection\DiagnosedApplications`
+- 📊 Contains subkeys for each detected executable
+- ⏰ Records `LastDetectionTime` for each detection event
+- 🔄 Continuously monitors system-wide memory behavior
 
-## Structure and Significance
+## 🔬 How Detection Works
+According to [research by Harel Segev](https://harelsegev.github.io/posts/the-mystery-of-the-heapleakdetection-registry-key/), RADAR monitors processes based on several factors:
+- 📈 Commits at least 5% of total physical memory (CommitThreshold)
+- ⏱️ Checks processes at regular intervals (TimerInterval)
+- 🕒 Maintains detection history to prevent duplicate entries
 
-- The key contains subkeys representing individual executables.
-- Each subkey records a `LastDetectionTime`, indicating when RADAR last detected a memory leak from the executable.
-- While RADAR primarily focuses on system performance and diagnostics, this information serves as a crucial forensic artifact for investigators.
+## 🛠️ Memory Leak Simulation Tool
+This repository includes a C++ program that demonstrates how to trigger Windows RADAR HeapLeakDetection:
 
-## Forensic Value
+### Features
+- 💾 Controlled memory allocation in configurable chunks
+- 📊 Real-time allocation monitoring
+- ⚡ Optimized for RADAR detection
+- 🔄 Continuous execution until detection
 
-1. **Alternative Evidence Source**: Particularly useful when traditional evidence (e.g., Prefetch files, event logs) is missing or tampered with.
-2. **Temporal Correlation**: Helps tie malicious executables to memory issues at specific times.
-3. **Behavioral Insights**: Provides leads to investigate an application's behavior, potentially exposing malicious activity.
-4. **Resilience to Anti-Forensics**: Often overlooked by attackers, offering unaltered data in post-intrusion scenarios.
+### Usage
+1. Clone this repository
+2. Build using provided build script or Visual Studio
+3. Run as administrator
+4. Monitor registry for detection entry
 
-## Investigative Application
+## 🔍 Forensic Value
+As highlighted by [security researchers](https://x.com/samaritan_o/status/1848743680384889031), this artifact provides:
+- 🕵️ Alternative evidence source when traditional artifacts are missing
+- ⏰ Temporal correlation for suspicious executables
+- 🧪 Behavioral insights into application memory patterns
+- 🛡️ Resilience against common anti-forensic techniques
 
-- Analysts can use this registry key to track memory leak detection over time for specific executables.
-- It serves as a fresh, unaltered point of reference in post-intrusion investigations.
-- The data can guide deeper analysis into suspicious application behavior.
+## 📚 References
+- [The Mystery of the HeapLeakDetection Registry Key](https://harelsegev.github.io/posts/the-mystery-of-the-heapleakdetection-registry-key/)
+- [Twitter Thread on Forensic Applications](https://x.com/samaritan_o/status/1848743680384889031)
 
-## Visual Evidence
+## 🤝 Contributing
+Contributions are welcome! Please feel free to submit pull requests or open issues for improvements.
 
-Screenshots from test environments typically showcase:
-- Subkeys representing different executables
-- `LastDetectionTime` values for each subkey
-- Chronological tracking of memory leak detections
-
-By leveraging this often-overlooked artifact, investigators can uncover valuable leads and correlate malicious activity that might otherwise go unnoticed.
-
-# Memory Leak Simulation for HeapLeakDetection
-
-This project contains a simple C++ program that simulates a memory leak to trigger Windows RADAR HeapLeakDetection.
-
-## Contents
-
-- `heapmemleak.c++`: The source code for the memory leak simulation.
-- `.github/workflows/build-and-test.yml`: GitHub Actions workflow for building and testing the program.
-
-## How it works
-
-The `heapmemleak.c++` program continuously allocates memory without freeing it, simulating a memory leak. This is designed to trigger the Windows HeapLeakDetection mechanism.
-
-## GitHub Actions Workflow
-
-The included GitHub Actions workflow does the following:
-
-1. Compiles the `heapmemleak.c++` file.
-2. Runs the compiled executable for a short period.
-3. Checks for the presence of the HeapLeakDetection registry key.
-
-To use this workflow:
-
-1. Fork or clone this repository.
-2. Push changes to the `main` branch or create a pull request.
-3. The workflow will automatically run.
-4. You can also manually trigger the workflow from the Actions tab in the GitHub repository.
-
-## Local Testing
-
-To run the test locally:
-
-1. Compile the `heapmemleak.c++` file.
-2. Run the compiled executable.
-3. Check the registry key: `HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\HeapLeakDetection`
-
-Note: Running this program may consume significant system resources. Use with caution and only on systems you have permission to test on.
+## 📜 License
+This project is licensed under the MIT License - see the LICENSE file for details.
