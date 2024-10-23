@@ -20,9 +20,9 @@ jobs:
     - name: Setup Developer Command Prompt
       uses: ilammy/msvc-dev-cmd@v1
 
-    - name: Compile heapmemleak.c++
+    - name: Compile heapmemleak.cpp
       run: |
-        cl.exe /EHsc /Fe:memoryleak.exe heapmemleak.c++
+        cl.exe /EHsc /Fe:memoryleak.exe heapmemleak.cpp
       
     - name: Upload compiled executable
       uses: actions/upload-artifact@v3
