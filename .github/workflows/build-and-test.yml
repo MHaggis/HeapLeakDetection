@@ -12,17 +12,17 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     
     - name: Set up MSVC
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v1.1
     
     - name: Compile heapmemleak.c++
       run: |
         cl.exe /EHsc /Fe:memoryleak.exe heapmemleak.c++
       
     - name: Upload compiled executable
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: memoryleak
         path: memoryleak.exe
@@ -32,10 +32,10 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     
     - name: Download compiled executable
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: memoryleak
     
