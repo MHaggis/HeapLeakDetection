@@ -1,0 +1,53 @@
+name: Compile, Tag, and Release Binary
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-tag-release:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Compile C++ code
+      run: |
+        cl.exe /EHsc /Fe:memoryleak.exe heapmemleak.cpp
+
+    - name: Create and Push Tag
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        $TAG_NAME="release-$(Get-Date -Format 'yyyyMMddHHmmss')"
+        git tag $TAG_NAME
+        git push origin $TAG_NAME
+        echo "TAG_NAME=$TAG_NAME" | Out-File -Append -FilePath $env:GITHUB_ENV
+      shell: pwsh
+
+    - name: Create Release and Upload Binary
+      uses: softprops/action-gh-release@v1
+      with:
+        files: memoryleak.exe
+        tag_name: ${{ env.TAG_NAME }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Update Download Link in File
+      run: |
+        $releaseUrl = "https://github.com/MHaggis/HeapLeakDetection/releases/download/${{ env.TAG_NAME }}/memoryleak.exe"
+        $filePath = "README.md"
+        $fileContent = Get-Content $filePath
+        $updatedContent = $fileContent -replace 'The generated binary may be found here:.*', ("The generated binary may be found here: " + $releaseUrl + ',",')
+        Set-Content -Path $filePath -Value $updatedContent
+      shell: pwsh
+
+    - name: Commit and Push Changes
+      run: |
+        git config --local user.email "github-actions@github.com"
+        git config --local user.name "GitHub Actions"
+        git add README.md
+        git commit -m "Update download link for memoryleak.exe"
+        git push
+      shell: pwsh

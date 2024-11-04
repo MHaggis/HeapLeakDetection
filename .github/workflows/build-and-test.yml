@@ -24,23 +24,9 @@ jobs:
       run: |
         cl.exe /EHsc /Fe:memoryleak.exe heapmemleak.cpp
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload Executable as Artifact
+      uses: actions/upload-artifact@v4
       with:
-        tag_name: v1.0.0
-        release_name: Release v1.0.0
-        draft: false
-        prerelease: false
-
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./memoryleak.exe
-        asset_name: memoryleak.exe
-        asset_content_type: application/octet-stream
+        name: memoryleak
+        path: memoryleak.exe
+        retention-days: 180
