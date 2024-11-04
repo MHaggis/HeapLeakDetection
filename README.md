@@ -43,6 +43,3 @@ As highlighted by [security researchers](https://x.com/samaritan_o/status/184874
 
 ## 🤝 Contributing
 Contributions are welcome! Please feel free to submit pull requests or open issues for improvements.
-
-## 📜 License
-This project is licensed under the MIT License - see the LICENSE file for details.
